@@ -52,7 +52,7 @@ The script is intentionally opinionated about safety:
 These are the defaults in the current QA build:
 
 - Domain: `allwavesites.com`
-- Authenticated Graph account: `admin@NETORG500158.onmicrosoft.com`
+- Authenticated Graph account: `set in GUI`
 - Default Send As address: `user@domain.com`
 - Default support email: `user@domain.com`
 - Activation delay: `20` seconds
