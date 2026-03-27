@@ -33,14 +33,14 @@ $Config = @{
     Domain = "domain.com"
 
     # Interactive Graph sign-in is expected to use this account.
-    AuthenticatedGraphAccount = "admin@NETORG500158.onmicrosoft.com"
+    AuthenticatedGraphAccount = "user@domain.com"
 
     # The mailbox address the message should appear from.
     MailFrom = "user@domain.com"
 
     # SMTP fallback is last-resort only. Credentials are for the authenticating account,
     # not necessarily the visible From address.
-    SmtpAuthUser = "admin@NETORG500158.onmicrosoft.com"
+    SmtpAuthUser = "user@domain.com"
     SmtpServer = "smtp.office365.com"
     SmtpPort = 587
     AllowLegacySmtpFallback = $true
@@ -104,6 +104,7 @@ $Script:DataGridView = $null
 $Script:CurrentRowIndex = 0
 $Script:ResolvedLogPath = $null
 $Script:MailFromTextBox = $null
+$Script:AuthenticatedGraphAccountTextBox = $null
 
 # ====================== UTILITY FUNCTIONS ======================
 function Test-IsAdministrator {
@@ -1433,7 +1434,7 @@ $Config.GraphRetryDelaySeconds = Get-ClampedIntValue -Value $Config.GraphRetryDe
 $Config.SmtpAuthPropagationWaitSeconds = Get-ClampedIntValue -Value $Config.SmtpAuthPropagationWaitSeconds -DefaultValue 15 -Minimum 0 -Maximum 300
 
 $configPanel = New-Object System.Windows.Forms.Panel
-$configPanel.Size = New-Object System.Drawing.Size(1220, 88)
+$configPanel.Size = New-Object System.Drawing.Size(1220, 118)
 $configPanel.Dock = [System.Windows.Forms.DockStyle]::Top
 $configPanel.BackColor = [System.Drawing.Color]::White
 $configPanel.Padding = New-Object System.Windows.Forms.Padding(12, 8, 12, 8)
@@ -1457,11 +1458,30 @@ $senderHintLabel.ForeColor = [System.Drawing.Color]::FromArgb(96, 94, 92)
 $senderHintLabel.AutoSize = $true
 $senderHintLabel.Location = New-Object System.Drawing.Point(480, 13)
 
+$expectedGraphLabel = New-Object System.Windows.Forms.Label
+$expectedGraphLabel.Text = "Expected Graph login:"
+$expectedGraphLabel.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+$expectedGraphLabel.AutoSize = $true
+$expectedGraphLabel.Location = New-Object System.Drawing.Point(15, 50)
+
+$Script:AuthenticatedGraphAccountTextBox = New-Object System.Windows.Forms.TextBox
+$Script:AuthenticatedGraphAccountTextBox.Text = $Config.AuthenticatedGraphAccount
+$Script:AuthenticatedGraphAccountTextBox.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+$Script:AuthenticatedGraphAccountTextBox.Size = New-Object System.Drawing.Size(330, 28)
+$Script:AuthenticatedGraphAccountTextBox.Location = New-Object System.Drawing.Point(135, 47)
+
+$expectedGraphHintLabel = New-Object System.Windows.Forms.Label
+$expectedGraphHintLabel.Text = "Used for Graph-account mismatch checks and SMTP fallback auth default."
+$expectedGraphHintLabel.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+$expectedGraphHintLabel.ForeColor = [System.Drawing.Color]::FromArgb(96, 94, 92)
+$expectedGraphHintLabel.AutoSize = $true
+$expectedGraphHintLabel.Location = New-Object System.Drawing.Point(480, 50)
+
 $activationDelayLabel = New-Object System.Windows.Forms.Label
 $activationDelayLabel.Text = "Apply delay (sec):"
 $activationDelayLabel.Font = New-Object System.Drawing.Font("Segoe UI", 10)
 $activationDelayLabel.AutoSize = $true
-$activationDelayLabel.Location = New-Object System.Drawing.Point(15, 50)
+$activationDelayLabel.Location = New-Object System.Drawing.Point(15, 82)
 
 $Script:ActivationDelayUpDown = New-Object System.Windows.Forms.NumericUpDown
 $Script:ActivationDelayUpDown.Minimum = 0
@@ -1469,13 +1489,13 @@ $Script:ActivationDelayUpDown.Maximum = 600
 $Script:ActivationDelayUpDown.Value = [decimal]$Config.PropagationWaitSeconds
 $Script:ActivationDelayUpDown.Font = New-Object System.Drawing.Font("Segoe UI", 10)
 $Script:ActivationDelayUpDown.Size = New-Object System.Drawing.Size(70, 28)
-$Script:ActivationDelayUpDown.Location = New-Object System.Drawing.Point(135, 47)
+$Script:ActivationDelayUpDown.Location = New-Object System.Drawing.Point(135, 79)
 
 $retryDelayLabel = New-Object System.Windows.Forms.Label
 $retryDelayLabel.Text = "Retry delay (sec):"
 $retryDelayLabel.Font = New-Object System.Drawing.Font("Segoe UI", 10)
 $retryDelayLabel.AutoSize = $true
-$retryDelayLabel.Location = New-Object System.Drawing.Point(225, 50)
+$retryDelayLabel.Location = New-Object System.Drawing.Point(225, 82)
 
 $Script:RetryDelayUpDown = New-Object System.Windows.Forms.NumericUpDown
 $Script:RetryDelayUpDown.Minimum = 1
@@ -1483,13 +1503,13 @@ $Script:RetryDelayUpDown.Maximum = 60
 $Script:RetryDelayUpDown.Value = [decimal]$Config.GraphRetryDelaySeconds
 $Script:RetryDelayUpDown.Font = New-Object System.Drawing.Font("Segoe UI", 10)
 $Script:RetryDelayUpDown.Size = New-Object System.Drawing.Size(70, 28)
-$Script:RetryDelayUpDown.Location = New-Object System.Drawing.Point(342, 47)
+$Script:RetryDelayUpDown.Location = New-Object System.Drawing.Point(342, 79)
 
 $smtpWaitLabel = New-Object System.Windows.Forms.Label
 $smtpWaitLabel.Text = "SMTP wait (sec):"
 $smtpWaitLabel.Font = New-Object System.Drawing.Font("Segoe UI", 10)
 $smtpWaitLabel.AutoSize = $true
-$smtpWaitLabel.Location = New-Object System.Drawing.Point(432, 50)
+$smtpWaitLabel.Location = New-Object System.Drawing.Point(432, 82)
 
 $Script:SmtpWaitUpDown = New-Object System.Windows.Forms.NumericUpDown
 $Script:SmtpWaitUpDown.Minimum = 0
@@ -1497,18 +1517,21 @@ $Script:SmtpWaitUpDown.Maximum = 300
 $Script:SmtpWaitUpDown.Value = [decimal]$Config.SmtpAuthPropagationWaitSeconds
 $Script:SmtpWaitUpDown.Font = New-Object System.Drawing.Font("Segoe UI", 10)
 $Script:SmtpWaitUpDown.Size = New-Object System.Drawing.Size(70, 28)
-$Script:SmtpWaitUpDown.Location = New-Object System.Drawing.Point(541, 47)
+$Script:SmtpWaitUpDown.Location = New-Object System.Drawing.Point(541, 79)
 
 $timerHintLabel = New-Object System.Windows.Forms.Label
 $timerHintLabel.Text = "Applies to activation wait, retry pacing, and SMTP fallback propagation wait."
 $timerHintLabel.Font = New-Object System.Drawing.Font("Segoe UI", 9)
 $timerHintLabel.ForeColor = [System.Drawing.Color]::FromArgb(96, 94, 92)
 $timerHintLabel.AutoSize = $true
-$timerHintLabel.Location = New-Object System.Drawing.Point(630, 50)
+$timerHintLabel.Location = New-Object System.Drawing.Point(630, 82)
 
 $configPanel.Controls.Add($sendAsLabel)
 $configPanel.Controls.Add($Script:MailFromTextBox)
 $configPanel.Controls.Add($senderHintLabel)
+$configPanel.Controls.Add($expectedGraphLabel)
+$configPanel.Controls.Add($Script:AuthenticatedGraphAccountTextBox)
+$configPanel.Controls.Add($expectedGraphHintLabel)
 $configPanel.Controls.Add($activationDelayLabel)
 $configPanel.Controls.Add($Script:ActivationDelayUpDown)
 $configPanel.Controls.Add($retryDelayLabel)
@@ -1665,6 +1688,10 @@ function Test-IsValidEmailAddress {
 }
 
 function Sync-UiConfig {
+    $previousMailFrom = $Config.MailFrom
+    $previousAuthenticatedGraphAccount = $Config.AuthenticatedGraphAccount
+    $previousSmtpAuthUser = $Config.SmtpAuthUser
+
     if ($Script:MailFromTextBox -and -not $Script:MailFromTextBox.IsDisposed) {
         $mailFrom = ([string]$Script:MailFromTextBox.Text).Trim()
         if ([string]::IsNullOrWhiteSpace($mailFrom)) {
@@ -1674,11 +1701,26 @@ function Sync-UiConfig {
             throw "Send As address is not a valid email address: $mailFrom"
         }
 
-        $previousMailFrom = $Config.MailFrom
         $Config.MailFrom = $mailFrom
 
         if ([string]::IsNullOrWhiteSpace($Config.SupportEmail) -or $Config.SupportEmail -eq $previousMailFrom) {
             $Config.SupportEmail = $mailFrom
+        }
+    }
+
+    if ($Script:AuthenticatedGraphAccountTextBox -and -not $Script:AuthenticatedGraphAccountTextBox.IsDisposed) {
+        $expectedGraphAccount = ([string]$Script:AuthenticatedGraphAccountTextBox.Text).Trim()
+        if ([string]::IsNullOrWhiteSpace($expectedGraphAccount)) {
+            throw "Expected Graph login cannot be blank."
+        }
+        if (-not (Test-IsValidEmailAddress -Address $expectedGraphAccount)) {
+            throw "Expected Graph login is not a valid email address: $expectedGraphAccount"
+        }
+
+        $Config.AuthenticatedGraphAccount = $expectedGraphAccount
+
+        if ([string]::IsNullOrWhiteSpace($previousSmtpAuthUser) -or $previousSmtpAuthUser -eq $previousAuthenticatedGraphAccount) {
+            $Config.SmtpAuthUser = $expectedGraphAccount
         }
     }
 
@@ -1712,12 +1754,12 @@ $loadBtn.Add_Click({
 
     try {
         Sync-UiConfig
-        Write-Log "Using Send As address: $($Config.MailFrom) | Activation delay: $($Config.PropagationWaitSeconds)s | Retry delay: $($Config.GraphRetryDelaySeconds)s | SMTP wait: $($Config.SmtpAuthPropagationWaitSeconds)s" "Info"
+        Write-Log "Using Send As address: $($Config.MailFrom) | Expected Graph login: $($Config.AuthenticatedGraphAccount) | Activation delay: $($Config.PropagationWaitSeconds)s | Retry delay: $($Config.GraphRetryDelaySeconds)s | SMTP wait: $($Config.SmtpAuthPropagationWaitSeconds)s" "Info"
     }
     catch {
         [System.Windows.Forms.MessageBox]::Show(
             $_.Exception.Message,
-            "Invalid Send As Address",
+            "Invalid Workflow Address Settings",
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
         )
@@ -1877,12 +1919,12 @@ $viewPwBtn.Add_Click({
 $sendBtn.Add_Click({
     try {
         Sync-UiConfig
-        Write-Log "Workflow sender set to: $($Config.MailFrom) | Activation delay: $($Config.PropagationWaitSeconds)s | Retry delay: $($Config.GraphRetryDelaySeconds)s | SMTP wait: $($Config.SmtpAuthPropagationWaitSeconds)s" "Info"
+        Write-Log "Workflow sender set to: $($Config.MailFrom) | Expected Graph login: $($Config.AuthenticatedGraphAccount) | Activation delay: $($Config.PropagationWaitSeconds)s | Retry delay: $($Config.GraphRetryDelaySeconds)s | SMTP wait: $($Config.SmtpAuthPropagationWaitSeconds)s" "Info"
     }
     catch {
         [System.Windows.Forms.MessageBox]::Show(
             $_.Exception.Message,
-            "Invalid Send As Address",
+            "Invalid Workflow Address Settings",
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
         )
@@ -2075,6 +2117,7 @@ $Script:Form.Add_Shown({
     Write-Log "Resolved log path: $Script:ResolvedLogPath" "Info"
     Write-Log "Expected Graph account: $($Config.AuthenticatedGraphAccount)" "Info"
     Write-Log "Default Send As address: $($Config.MailFrom)" "Info"
+    Write-Log "Default expected Graph login: $($Config.AuthenticatedGraphAccount)" "Info"
     Write-Log "Visible mail sender: $($Config.MailFrom)" "Info"
     Write-Log "Activation delay: $($Config.PropagationWaitSeconds)s | Retry delay: $($Config.GraphRetryDelaySeconds)s | SMTP wait: $($Config.SmtpAuthPropagationWaitSeconds)s" "Info"
 
