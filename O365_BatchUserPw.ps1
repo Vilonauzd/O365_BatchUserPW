@@ -30,7 +30,7 @@ catch {}
 
 # ====================== CONFIGURATION ======================
 $Config = @{
-    Domain = "allwavesites.com"
+    Domain = "domain.com"
 
     # Interactive Graph sign-in is expected to use this account.
     AuthenticatedGraphAccount = "admin@NETORG500158.onmicrosoft.com"
@@ -49,7 +49,7 @@ $Config = @{
     PropagationWaitSeconds = 20
     SupportEmail = "user@domain.com"
     SupportPhone = "[Your Support Phone]"
-    LogPath = "C:\temp\allwavesites_pwreset_logs"
+    LogPath = "C:\temp\O365_BatchUserPW"
 
     GraphRetryCount = 3
     PasswordApplyRetryCount = 3
@@ -135,8 +135,8 @@ function Ensure-Directory {
 function Resolve-LogPath {
     $candidatePaths = @(
         $Config.LogPath,
-        (Join-Path -Path $env:TEMP -ChildPath "allwavesites_pwreset_logs"),
-        (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath "allwavesites_pwreset_logs")
+        (Join-Path -Path $env:TEMP -ChildPath "O365_BatchUserPW"),
+        (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath "O365_BatchUserPW")
     ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
 
     foreach ($path in $candidatePaths) {
@@ -1358,7 +1358,7 @@ function Process-UserReset {
 
 # ====================== FORM SETUP ======================
 $Script:Form = New-Object System.Windows.Forms.Form
-$Script:Form.Text = "Microsoft 365 Password Reset Tool - $($Config.Domain)"
+$Script:Form.Text = "O365 Batch User Password Tool - $($Config.Domain)"
 $Script:Form.Size = New-Object System.Drawing.Size(1260, 780)
 $Script:Form.StartPosition = "CenterScreen"
 $Script:Form.Font = New-Object System.Drawing.Font("Segoe UI", 10)
@@ -1372,7 +1372,7 @@ $headerPanel.BackColor = [System.Drawing.Color]::FromArgb(0, 120, 212)
 $headerPanel.Dock = [System.Windows.Forms.DockStyle]::Top
 
 $headerLabel = New-Object System.Windows.Forms.Label
-$headerLabel.Text = "🔐 Microsoft 365 Password Reset Tool"
+$headerLabel.Text = "🔐 O365 Batch User Password Tool"
 $headerLabel.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
 $headerLabel.ForeColor = [System.Drawing.Color]::White
 $headerLabel.AutoSize = $true
@@ -1804,7 +1804,7 @@ $viewPwBtn.Add_Click({
     }
 
     $pwForm = New-Object System.Windows.Forms.Form
-    $pwForm.Text = "Temporary Passwords - $($Config.Domain)"
+    $pwForm.Text = "O365 Batch User Passwords - $($Config.Domain)"
     $pwForm.Size = New-Object System.Drawing.Size(1180, 560)
     $pwForm.StartPosition = "CenterScreen"
     $pwForm.Font = New-Object System.Drawing.Font("Segoe UI", 10)
@@ -2040,7 +2040,7 @@ $exportBtn.Add_Click({
 
     $saveDialog = New-Object System.Windows.Forms.SaveFileDialog
     $saveDialog.Filter = "CSV Files (*.csv)|*.csv"
-    $saveDialog.FileName = "allwavesites_PASSWORDS_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
+    $saveDialog.FileName = "O365_BatchUserPW_PASSWORDS_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
 
     if ($saveDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
         try {
