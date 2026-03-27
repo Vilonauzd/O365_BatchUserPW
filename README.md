@@ -4,6 +4,7 @@ PowerShell GUI tool for staged Microsoft 365 password resets with defensive pref
 
 Current QA build documented here:
 - `O365_BatchUserPw.ps1`
+<img width="1569" height="925" alt="image" src="https://github.com/user-attachments/assets/458875c1-fb35-4a19-b080-cc8aef8422cc" />
 
 ## What it does
 
