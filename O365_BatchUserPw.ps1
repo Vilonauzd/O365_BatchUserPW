@@ -1836,12 +1836,8 @@ $selectNoneBtn.Add_Click({
 
 $viewPwBtn.Add_Click({
     if ($Script:PasswordRecords.Count -eq 0) {
-        [System.Windows.Forms.MessageBox]::Show(
-            "No password records are available yet.",
-            "No Data",
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Information
-        )
+        Update-Status "No password records are available yet."
+        Write-Log "No password records are available yet." "Info"
         return
     }
 
@@ -1893,12 +1889,8 @@ $viewPwBtn.Add_Click({
             $value = [string]$pwGrid.SelectedRows[0].Cells["Password"].Value
             if (-not [string]::IsNullOrWhiteSpace($value)) {
                 [System.Windows.Forms.Clipboard]::SetText($value)
-                [System.Windows.Forms.MessageBox]::Show(
-                    "Password copied.",
-                    "Copied",
-                    [System.Windows.Forms.MessageBoxButtons]::OK,
-                    [System.Windows.Forms.MessageBoxIcon]::Information
-                )
+                Update-Status "Password copied to clipboard."
+                Write-Log "Password copied to clipboard." "Info"
             }
         }
     })
@@ -2049,23 +2041,15 @@ $sendBtn.Add_Click({
             $msg += "`n`nReport: $reportPath"
         }
 
-        [System.Windows.Forms.MessageBox]::Show(
-            $msg,
-            "Complete",
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Information
-        )
+        Update-Status $msg.Replace("`n", " | ")
+        Write-Log $msg.Replace("`n", " | ") "Info"
     }
 })
 
 $exportBtn.Add_Click({
     if ($Script:PasswordRecords.Count -eq 0) {
-        [System.Windows.Forms.MessageBox]::Show(
-            "No password records are available to export.",
-            "No Data",
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Information
-        )
+        Update-Status "No password records are available to export."
+        Write-Log "No password records are available to export." "Info"
         return
     }
 
@@ -2091,12 +2075,8 @@ $exportBtn.Add_Click({
                 Export-Csv -Path $saveDialog.FileName -NoTypeInformation -Encoding UTF8 -ErrorAction Stop
 
             Write-Log "Password records exported: $($saveDialog.FileName)" "Success"
-            [System.Windows.Forms.MessageBox]::Show(
-                "Export complete.`n`nFile: $($saveDialog.FileName)",
-                "Export Complete",
-                [System.Windows.Forms.MessageBoxButtons]::OK,
-                [System.Windows.Forms.MessageBoxIcon]::Information
-            )
+            Update-Status "Export complete: $($saveDialog.FileName)"
+            Write-Log "Export complete: $($saveDialog.FileName)" "Info"
         }
         catch {
             Write-Log "Failed to export password records: $($_.Exception.Message)" "Error"
