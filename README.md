@@ -3,7 +3,7 @@
 PowerShell GUI tool for staged Microsoft 365 password resets with defensive preflight checks, configurable mail sender settings, and configurable workflow timers.
 
 Current QA build documented here:
-- `hardened_m365_pwreset_tool_QA_v8_generic_sendas_default.ps1`
+- `O365_BatchUserPw.ps1`
 
 ## What it does
 
