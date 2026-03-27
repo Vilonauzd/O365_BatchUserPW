@@ -163,7 +163,7 @@ The script clamps loaded config values into safe numeric ranges so older saved s
 Example:
 
 ```powershell
-powershell.exe -ExecutionPolicy Bypass -File .\hardened_m365_pwreset_tool_QA_v8_generic_sendas_default.ps1
+powershell.exe -ExecutionPolicy Bypass -File .\O365_BatchUserPw.ps1
 ```
 
 Recommended operator flow:
